@@ -12,102 +12,158 @@ from fpdf import FPDF
 class ResumePDF(FPDF):
     def __init__(self):
         super().__init__()
-        self.set_auto_page_break(auto=True, margin=12)
+        self.set_auto_page_break(auto=True, margin=15)
+        # Professional color scheme
+        self.primary_color = (25, 55, 95)      # Deep navy blue
+        self.secondary_color = (70, 130, 180)  # Steel blue
+        self.accent_color = (0, 128, 128)      # Teal
+        self.text_dark = (30, 30, 30)
+        self.text_medium = (70, 70, 70)
+        self.text_light = (100, 100, 100)
         
-    def header_section(self, name, title, contact_info):
-        """Create executive-style header"""
+    def draw_header_background(self):
+        """Draw a subtle gradient-like header background"""
+        self.set_fill_color(245, 248, 252)
+        self.rect(0, 0, 210, 52, 'F')
+        # Accent line at top
+        self.set_fill_color(*self.primary_color)
+        self.rect(0, 0, 210, 3, 'F')
+        
+    def header_section(self, name, title, contact_info, highlights=None):
+        """Create executive-style header with modern design"""
+        self.draw_header_background()
+        
         # Name with strong presence
-        self.set_font('Helvetica', 'B', 22)
-        self.set_text_color(20, 60, 100)
-        self.cell(0, 10, name, new_x="LMARGIN", new_y="NEXT", align='C')
+        self.set_y(8)
+        self.set_font('Helvetica', 'B', 24)
+        self.set_text_color(*self.primary_color)
+        self.cell(0, 12, name, new_x="LMARGIN", new_y="NEXT", align='C')
         
-        # Title
-        self.set_font('Helvetica', 'B', 11)
-        self.set_text_color(60, 60, 60)
-        self.cell(0, 6, title, new_x="LMARGIN", new_y="NEXT", align='C')
+        # Title with accent styling
+        self.set_font('Helvetica', 'B', 12)
+        self.set_text_color(*self.secondary_color)
+        self.cell(0, 7, title, new_x="LMARGIN", new_y="NEXT", align='C')
         
-        # Contact info
-        self.set_font('Helvetica', '', 9)
-        self.set_text_color(80, 80, 80)
+        # Contact info with icons representation
+        self.set_font('Helvetica', '', 8)
+        self.set_text_color(*self.text_medium)
         self.cell(0, 5, contact_info, new_x="LMARGIN", new_y="NEXT", align='C')
         
-        # Separator line
+        # Decorative separator
         self.ln(3)
-        self.set_draw_color(20, 60, 100)
-        self.set_line_width(0.8)
-        self.line(10, self.get_y(), 200, self.get_y())
+        self.set_draw_color(*self.primary_color)
+        self.set_line_width(0.5)
+        center = 105
+        self.line(center - 80, self.get_y(), center + 80, self.get_y())
         self.ln(4)
         
+        # Highlights section in modular box
+        if highlights:
+            # Draw highlight box
+            box_y = self.get_y()
+            self.set_fill_color(240, 248, 255)  # Light blue background
+            self.set_draw_color(*self.secondary_color)
+            self.set_line_width(0.8)
+            box_height = 14
+            self.rect(15, box_y, 180, box_height, 'DF')  # Draw filled rect with border
+            
+            # Highlights text centered in box
+            self.set_xy(17, box_y + 2)
+            self.set_font('Helvetica', 'B', 7.5)
+            self.set_text_color(*self.primary_color)
+            self.multi_cell(176, 4, highlights, align='C')
+            self.set_y(box_y + box_height + 3)
+        
     def section_title(self, title):
-        """Create section title with professional styling"""
-        self.ln(2)
+        """Create section title with modern professional styling"""
+        self.ln(3)
+        # Section icon placeholder (text-based)
         self.set_font('Helvetica', 'B', 11)
-        self.set_text_color(20, 60, 100)
-        self.cell(0, 6, title.upper(), new_x="LMARGIN", new_y="NEXT")
-        self.set_draw_color(20, 60, 100)
-        self.set_line_width(0.4)
-        self.line(10, self.get_y(), 200, self.get_y())
+        self.set_text_color(*self.primary_color)
+        
+        # Draw background strip
+        y_pos = self.get_y()
+        self.set_fill_color(245, 248, 252)
+        self.rect(10, y_pos, 190, 7, 'F')
+        
+        # Left accent bar
+        self.set_fill_color(*self.primary_color)
+        self.rect(10, y_pos, 3, 7, 'F')
+        
+        self.set_xy(16, y_pos + 1)
+        self.cell(0, 5, title.upper(), new_x="LMARGIN", new_y="NEXT")
         self.ln(3)
         
     def add_summary(self, summary):
-        """Add professional summary"""
-        self.set_font('Helvetica', '', 9.5)
-        self.set_text_color(30, 30, 30)
-        self.multi_cell(0, 4.5, summary)
+        """Add professional summary with better typography"""
+        self.set_font('Helvetica', '', 9)
+        self.set_text_color(*self.text_dark)
+        # Add subtle left border
+        x_start = self.get_x()
+        y_start = self.get_y()
+        self.set_left_margin(14)
+        self.set_x(14)
+        self.multi_cell(182, 4.5, summary)
+        self.set_left_margin(10)
         self.ln(1)
         
     def add_experience(self, title, company, location, period, achievements):
-        """Add work experience with strong visual hierarchy"""
-        # Job title
-        self.set_font('Helvetica', 'B', 10)
-        self.set_text_color(20, 20, 20)
-        self.cell(145, 5, title, new_x="RIGHT", new_y="TOP")
+        """Add work experience with enhanced visual hierarchy"""
+        # Check if we need a new page
+        if self.get_y() > 250:
+            self.add_page()
         
-        # Period
-        self.set_font('Helvetica', '', 9)
-        self.set_text_color(80, 80, 80)
+        # Job title with period
+        self.set_font('Helvetica', 'B', 10)
+        self.set_text_color(*self.text_dark)
+        self.cell(140, 5, title, new_x="RIGHT", new_y="TOP")
+        
+        # Period in accent color
+        self.set_font('Helvetica', 'B', 9)
+        self.set_text_color(*self.secondary_color)
         self.cell(0, 5, period, new_x="LMARGIN", new_y="NEXT", align='R')
         
-        # Company
+        # Company with location
         self.set_font('Helvetica', 'I', 9)
-        self.set_text_color(20, 60, 100)
-        self.cell(0, 4, f"{company} | {location}", new_x="LMARGIN", new_y="NEXT")
+        self.set_text_color(*self.accent_color)
+        self.cell(0, 5, f"{company} | {location}", new_x="LMARGIN", new_y="NEXT")
         self.ln(1)
         
-        # Achievements
-        self.set_font('Helvetica', '', 9)
-        self.set_text_color(30, 30, 30)
+        # Achievements with modern bullet styling
+        self.set_font('Helvetica', '', 8.5)
+        self.set_text_color(*self.text_dark)
         left_margin = self.l_margin
         for achievement in achievements:
-            self.set_left_margin(left_margin + 4)
-            self.set_x(left_margin + 4)
-            self.multi_cell(0, 4.2, f">> {achievement}")
+            self.set_left_margin(left_margin + 5)
+            self.set_x(left_margin + 5)
+            # Custom bullet
+            self.set_text_color(*self.secondary_color)
+            self.cell(4, 4, chr(149), new_x="RIGHT")  # Bullet character
+            self.set_text_color(*self.text_dark)
+            self.multi_cell(0, 4, achievement)
         self.set_left_margin(left_margin)
         self.ln(2)
         
     def add_skills_compact(self, skills_dict):
-        """Add skills in compact professional inline format with proper alignment"""
+        """Add skills in modern card-style format"""
         original_left_margin = self.l_margin
-        right_margin = self.r_margin
-        page_width = self.w - original_left_margin - right_margin
-        category_width = 48
+        page_width = self.w - original_left_margin - self.r_margin
+        category_width = 50
         skills_start_x = original_left_margin + category_width
         skills_width = page_width - category_width
         
         for category, skills in skills_dict.items():
-            # Category label (bold, blue)
+            # Category label with accent
             self.set_font('Helvetica', 'B', 9)
-            self.set_text_color(20, 60, 100)
+            self.set_text_color(*self.primary_color)
             self.set_x(original_left_margin)
-            self.cell(category_width, 4.5, f"{category}:")
+            self.cell(category_width, 5, f"{category}:")
             
-            # Skills text (normal, dark) - aligned properly
-            self.set_font('Helvetica', '', 9)
-            self.set_text_color(30, 30, 30)
-            # Temporarily adjust left margin so wrapped text aligns
+            # Skills text
+            self.set_font('Helvetica', '', 8.5)
+            self.set_text_color(*self.text_dark)
             self.set_left_margin(skills_start_x)
-            self.multi_cell(skills_width, 4.5, skills)
-            # Restore original margin
+            self.multi_cell(skills_width, 5, skills)
             self.set_left_margin(original_left_margin)
         self.ln(1)
         
@@ -124,6 +180,12 @@ class ResumePDF(FPDF):
             self.set_text_color(60, 60, 60)
             self.cell(0, 4, edu['institution'], new_x="LMARGIN", new_y="NEXT")
             self.ln(1)
+    
+    def add_awards(self, awards):
+        """Add awards section"""
+        self.set_font('Helvetica', '', 9)
+        self.set_text_color(30, 30, 30)
+        self.multi_cell(0, 4.2, awards)
 
 
 def generate_resume():
@@ -135,20 +197,29 @@ def generate_resume():
     pdf.header_section(
         name="SAGAR CHAVAN",
         title="Senior Technical Lead - DevOps",
-        contact_info="Pune, India  |  sagarchavan6210@gmail.com  |  linkedin.com/in/sagarchavan  |  github.com/saggy6210"
+        contact_info="Pune, India  |  sagarchavan6210@gmail.com  |  linkedin.com/in/sagarchavan  |  +91-8308001062  |  saggy6210.github.io/about-me/",
+        highlights="10+ Years DevOps & Cloud Engineering Experience | DevOps Leader | AI-Assisted Development using Visual Studio Copilot\nPTC India AI Hackathon Winner | Cross-Functional Team Leadership & Mentoring | DevOps Transformation Initiatives"
     )
     
     # ===== PROFESSIONAL SUMMARY =====
     pdf.section_title("Professional Summary")
-    summary = """Results-driven DevOps Leader with 10+ years of experience architecting enterprise-scale cloud infrastructure, CI/CD pipelines, and platform engineering solutions across AWS and Azure. Proven track record leading cross-functional teams of 5+ engineers, driving DevOps transformation initiatives, and delivering highly available systems with 99.9% uptime SLA. Expert in Infrastructure as Code (Terraform, Ansible), Kubernetes orchestration, comprehensive observability platforms (Grafana, Prometheus, Datadog), and SRE best practices. Demonstrated success in reducing deployment lead times by 60%, achieving 25% infrastructure cost optimization, and implementing enterprise disaster recovery strategies. Passionate about fostering DevOps culture, mentoring engineering teams, and operational excellence."""
+    summary = """Results-driven DevOps Leader with 10+ years of experience in designing, automating, and managing enterprise-scale cloud infrastructure and DevOps platforms across AWS and Azure environments. Expertise in Infrastructure as Code (Terraform, Ansible), container orchestration (Kubernetes, Helm), CI/CD automation (Jenkins, GitLab CI/CD, Bitbucket, GitHub Actions), observability and monitoring platforms (Datadog, Grafana, Prometheus, Elasticsearch, Alertmanager), cloud-native technologies (Docker, AWS, Azure), and SRE best practices.
+
+Strong hands-on experience with Terraform, Ansible, Docker, Kubernetes, Jenkins, GitLab, Bitbucket, Helm, Prometheus, Grafana, Elasticsearch, Datadog, Linux, Windows, Shell scripting, Python, and GoLang. Proven ability to architect scalable, highly available, and secure infrastructure solutions while improving operational efficiency and deployment reliability.
+
+Proven track record leading cross-functional teams of 5+ engineers, driving DevOps transformation initiatives, and delivering highly available systems with 99.9% uptime SLA. Experienced in leading and mentoring teams of 4-5 engineers, implementing SRE and monitoring best practices, and automating enterprise deployment workflows. Successfully delivered cloud cost optimization initiatives, centralized logging and monitoring platforms, automated infrastructure provisioning, and application deployment pipelines.
+
+Passionate about innovation and AI-driven engineering solutions, with hands-on experience using GitHub Copilot and Visual Studio Copilot for development acceleration and automation. Recognized for mentoring and leading a team that won the PTC India-level AI Hackathon, demonstrating strong leadership, collaboration, and problem-solving capabilities in AI and automation initiatives.
+
+Skilled in developing customer-focused internal web applications and dashboards for operational tracking, proactive issue identification, and log analytics using Datadog, Grafana, and Prometheus. Actively involved in building internal mentoring programs to strengthen cloud, automation, and consulting competencies within engineering teams."""
     pdf.add_summary(summary)
     
     # ===== CORE COMPETENCIES =====
     pdf.section_title("Core Competencies")
     skills = {
-        "Cloud & Infrastructure": "AWS (EKS, EC2, Lambda, RDS, S3, VPC, IAM), Azure (AKS, VMs, App Service), Multi-Cloud Architecture",
-        "IaC & Automation": "Terraform, Ansible, CloudFormation, Python, Golang, PowerShell, Shell Scripting",
-        "CI/CD & DevOps": "GitLab CI/CD, Jenkins, Azure DevOps, Bitbucket Pipelines, GitHub Actions, ArgoCD",
+        "Cloud & Infrastructure": "AWS (EKS, EC2, S3, VPC, IAM), Azure (AKS, VMs, Batch Account, Gallery Images, Storage Accounts)",
+        "IaC & Automation": "Terraform, Ansible, Python, Golang, PowerShell, Shell Scripting",
+        "CI/CD & DevOps": "GitLab CI/CD, Jenkins, Bitbucket Pipelines, GitHub Actions",
         "Containers & Orchestration": "Kubernetes, Docker, Helm, EKS, AKS, Container Security, Microservices",
         "Observability & SRE": "Grafana, Prometheus, Alertmanager, Datadog, Elasticsearch, PagerDuty, SLO/SLI/SLA",
         "Leadership & Practices": "Team Leadership (5+ Engineers), Agile/Scrum, DR Planning, Cost Optimization, Security Hardening"
@@ -158,24 +229,42 @@ def generate_resume():
     # ===== PROFESSIONAL EXPERIENCE =====
     pdf.section_title("Professional Experience")
     
-    # CloudHedge - Current Role (Combined with enhanced responsibilities)
+    # PTC Software
     pdf.add_experience(
         title="Senior Technical Lead - DevOps",
+        company="PTC Software",
+        location="Pune, India",
+        period="May 2022 - Present",
+        achievements=[
+            "Developing and executing DevOps strategies that enhances collaboration between DevOps, Dev and QA teams by actively seeking input, documenting processes, and ensuring that decisions are well-informed and aligned with all stakeholders",
+            "Leading and mentoring a team of DevOps engineers, guiding best practices, fostering an innovative team culture, and supporting the team in debugging and investigating production issues for resolution",
+            "Implementing and managing DevOps tools and technologies to automate processes including CI/CD using Gitlab, Python, Ansible playbooks, Terraform for IaC, Grafana, and Datadog dashboards for monitoring",
+            "Led automation of Azure gallery image creation process by evaluating requirements and implementation using Ansible, Python, Azure Identity, Project infrastructure management, license server setup and monitoring",
+            "Automated pipelines to upload installers to Jfrog artifactory, deployment pipeline, automated regular cleanup to reduce the infrastructure cost",
+            "Led the scheduled disaster recovery for VCS project practices",
+            "Developed internal GoLang tools for operational automation and cloud resource cleanup",
+            "Built automated Azure image creation and Azure Batch deployment solutions",
+            "Implemented enterprise monitoring and alerting using Datadog, Grafana, Prometheus, and Alertmanager",
+            "Automated FlexLM license server deployment and recurring license management workflows",
+            "Managed Kubernetes and Helm-based application deployments across environments",
+            "Developed internal static web applications for operational tracking and customer-centric reporting",
+            "Built centralized dashboards and log analytics solutions for proactive incident identification",
+            "Led mentoring initiatives to improve cloud, automation, and consulting capabilities within engineering teams"
+        ]
+    )
+    
+    # CloudHedge
+    pdf.add_experience(
+        title="DevOps Engineer",
         company="CloudHedge Technologies",
         location="Pune, India",
-        period="Jul 2019 - Present",
+        period="Jul 2019 - Apr 2022",
         achievements=[
-            "Lead a team of 5+ DevOps engineers, establishing best practices, conducting code reviews, and driving continuous improvement initiatives across enterprise product lines",
-            "Architected multi-cloud infrastructure on AWS and Azure using Terraform, managing 200+ resources with zero-downtime deployments and automated disaster recovery procedures",
-            "Designed and implemented enterprise CI/CD pipelines using GitLab, Jenkins, Azure DevOps, and Bitbucket, improving deployment frequency by 40% and reducing lead time by 60%",
-            "Built comprehensive observability platform using Grafana, Prometheus, Alertmanager, and Datadog with Slack/Teams integrations, achieving 99.9% uptime SLA and reducing MTTR by 50%",
-            "Implemented AWS Landing Zone architecture with Transit Gateway, VPC peering, IAM/OIDC, and enterprise security controls for multi-account governance",
-            "Automated infrastructure operations using Golang, Python, Ansible, and PowerShell, reducing manual interventions by 80% and provisioning time from 4 hours to 30 minutes",
-            "Deployed Kubernetes monitoring stack with custom alerting, Node Exporter, and FlexLM Exporter for license server monitoring across distributed systems",
-            "Led disaster recovery planning and implementation including automated backups, certificate/password rotation, and infrastructure resilience testing",
-            "Configured GitLab Runners on ESX servers for automated software installation, patching, and configuration management across enterprise environments",
-            "Implemented cost optimization strategies through automated resource cleanup, right-sizing, and scheduled shutdown policies, achieving 25% infrastructure cost reduction",
-            "Drove cloud-native migration initiatives, containerizing monolithic applications and implementing microservices architecture patterns"
+            "Played key role in cloud (AWS/Azure) infrastructure provisioning using Terraform and CI/CD implementation using Jenkins, Gitlab, Bitbucket, and Azure/AWS pipeline",
+            "Designed and implemented automated functional and performance testing (sanity, regression) for the CloudHedge Enterprise using Python, Bash, Jenkins, Docker & Rest API",
+            "Worked on landing zone setup on AWS. Used AWS services are Route 53, ALB, NLB, EC2, VPC, Transit Gateway, RAM, IAM(Roles, policy, OIDC), API gateway, EKS, ECR, Lambda, RDS (MySql, Postgres Aurora), ElastiCache, DynamoDB, S3, System manager, KMS, AWS backup, ACM",
+            "Worked on an application assessment for migration to cloud-native containerization using the CloudHedge tool and Application performance consulting for multiple clients",
+            "Reduced monthly cost by $240 by removing unnecessary instances and services and enabling auto-shutdown on non-prod environments"
         ]
     )
     
@@ -186,12 +275,10 @@ def generate_resume():
         location="Pune, India",
         period="Nov 2017 - Jul 2019",
         achievements=[
-            "Engineered fully automated CI/CD pipelines with blue-green deployment strategy for Azure Web Apps, reducing deployment failures by 70%",
-            "Provisioned Azure infrastructure using Terraform including AKS, VMs, App Service, Functions, Scale Sets, ACR, Redis, SQL DB, and networking components",
-            "Designed centralized logging and monitoring solution using ELK Stack, Grafana, Azure Monitor, Log Analytics, and PagerDuty integration, reducing incident response time by 40%",
-            "Implemented Kubernetes orchestration with Docker containerization, GitLab Runner automation, and backup/restore procedures for production workloads",
-            "Developed Shell and Python automation scripts for deployment orchestration, environment provisioning, and operational efficiency improvements",
-            "Established repository management standards, RBAC policies, and security best practices for enterprise code collaboration"
+            "Successfully created and maintained fully automated CI/CD pipeline & blue green deployment for azure web apps using Gitlab and Jenkins pipeline",
+            "Worked on repository management, user-based access, and roles creation, cloud infrastructure provisioning on Azure using terraform. Used Azure services are AKS, VM, App Service, Azure functions, Scale Sets, ACR, Azure Redis, Azure SQL DB, Storage Account, WAF, Virtual Network, Application Gateway, Azure Frontdoor, Key Vault, Azure monitor",
+            "Designed and implemented Logging, Monitoring and alerting setup for MindSphere project using Grafana, Elasticsearch, Pagerduty, Azure Application insight, Log Analytics, Azure Monitor, Dashboard, and Alerts",
+            "Worked on the environment setup, Micro Services, Docker, AKS, Gitlab runner, Jenkins, backup and restore, automation using shell and python"
         ]
     )
     
@@ -202,10 +289,20 @@ def generate_resume():
         location="Pune, India",
         period="Jan 2016 - Nov 2017",
         achievements=[
-            "Administered WebLogic application servers including deployment automation, performance tuning, and troubleshooting for telecom billing applications serving millions of subscribers",
-            "Developed server monitoring tools and automated reporting dashboards for proactive infrastructure management",
-            "Created Shell scripting automation for deployment orchestration, reducing manual deployment time by 60%",
-            "Provided 24x7 production support ensuring environment stability and rapid incident resolution for mission-critical systems"
+            "Worked on WebLogic application server monitoring, configuration, applications deployment, and troubleshooting the functional issues on SIT/UIT environments",
+            "Designed and developed a 'Server Monitoring Tool' which shows server healths, capacity, uptime, etc and share the report over the mail",
+            "Developed and modified scripts as per the business requirements"
+        ]
+    )
+    
+    # Early Career
+    pdf.add_experience(
+        title="Project Intern",
+        company="Persistent Systems",
+        location="Pune, India",
+        period="Jan 2015 - Jul 2015",
+        achievements=[
+            "Developed test suite migration software 'Smart Migration Tool for test suite of data warehouse appliance' in Perl Script"
         ]
     )
     
@@ -217,6 +314,10 @@ def generate_resume():
         {"degree": "Diploma - Information Technology", "institution": "Government Polytechnic, Kolhapur", "period": "2009 - 2012"}
     ]
     pdf.add_education_compact(education)
+    
+    # ===== AWARDS =====
+    pdf.section_title("Awards & Recognition")
+    pdf.add_awards("Winner of PTC India Hackathon 2026 & Other Applause Awards")
     
     # Save the PDF
     output_file = "SagarChavan_Resume.pdf"
