@@ -10,8 +10,494 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- jsPDF Library for PDF Generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        /* Build Resume Page Specific Styles */
+        .build-resume-page {
+            padding-top: 100px;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .page-header h1 {
+            font-size: 2.5rem;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+        
+        .page-header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+        
+        /* Template Selection */
+        .template-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .template-section h2 {
+            font-size: 1.3rem;
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .template-section h2 i {
+            color: var(--primary-color);
+        }
+        
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        
+        .template-card {
+            border: 3px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+        
+        .template-card:hover {
+            border-color: var(--primary-light);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .template-card.selected {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, #e8f4f8 0%, #d4e8ed 100%);
+        }
+        
+        .template-preview {
+            height: 140px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Template Preview Styles */
+        .template-preview.professional {
+            background: linear-gradient(180deg, #19375f 0%, #19375f 15%, #f5f8fc 15%, #f5f8fc 100%);
+        }
+        
+        .template-preview.modern {
+            background: linear-gradient(180deg, #2c3e50 0%, #2c3e50 20%, #ecf0f1 20%, #ecf0f1 100%);
+        }
+        
+        .template-preview.minimal {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .template-preview.executive {
+            background: linear-gradient(180deg, #1a1a2e 0%, #1a1a2e 18%, #f8f9fa 18%, #f8f9fa 100%);
+        }
+        
+        .template-preview::after {
+            content: '';
+            position: absolute;
+            top: 25%;
+            left: 15%;
+            right: 15%;
+            bottom: 15%;
+            background: repeating-linear-gradient(
+                0deg,
+                #ccc,
+                #ccc 2px,
+                transparent 2px,
+                transparent 8px
+            );
+            opacity: 0.3;
+        }
+        
+        .template-card h3 {
+            font-size: 1rem;
+            color: var(--secondary-color);
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        
+        .template-card p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+        
+        .template-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--primary-color);
+            color: white;
+            font-size: 0.65rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        /* Form Modules */
+        .form-modules {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .form-module {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .form-module.collapsed .module-content {
+            display: none;
+        }
+        
+        .module-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 25px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            cursor: pointer;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .module-header:hover {
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+        }
+        
+        .module-header h3 {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+            margin: 0;
+        }
+        
+        .module-header h3 i {
+            width: 35px;
+            height: 35px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+        }
+        
+        .module-toggle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+        
+        .form-module:not(.collapsed) .module-toggle {
+            transform: rotate(180deg);
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        .module-content {
+            padding: 25px;
+        }
+        
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .module-grid .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .form-field label {
+            font-weight: 600;
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .form-field label .required {
+            color: #e74c3c;
+        }
+        
+        .form-field input,
+        .form-field textarea {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+        
+        .form-field input:focus,
+        .form-field textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(0, 82, 107, 0.1);
+        }
+        
+        .form-field textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        /* Dynamic Entries */
+        .entry-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .entry-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            position: relative;
+        }
+        
+        .entry-item .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .entry-item .entry-number {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 0.85rem;
+            background: rgba(0, 82, 107, 0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+        
+        .btn-remove {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-remove:hover {
+            background: #dc2626;
+            color: white;
+        }
+        
+        .btn-add {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 82, 107, 0.3);
+        }
+        
+        /* Action Buttons */
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-generate {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-generate:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        }
+        
+        .btn-reset {
+            background: #f3f4f6;
+            color: var(--text-secondary);
+            border: 2px solid #e5e7eb;
+            padding: 18px 30px;
+            border-radius: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-reset:hover {
+            background: #e5e7eb;
+            border-color: #d1d5db;
+        }
+        
+        /* Success Message */
+        .success-section {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .success-section.show {
+            display: block;
+        }
+        
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+        
+        .success-icon i {
+            font-size: 2.5rem;
+            color: white;
+        }
+        
+        .success-section h3 {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+        
+        .success-section p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+        
+        /* Progress Indicator */
+        .progress-bar {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .progress-step {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            transition: all 0.3s ease;
+        }
+        
+        .progress-step.active {
+            background: var(--primary-color);
+            transform: scale(1.2);
+        }
+        
+        .progress-step.completed {
+            background: #10b981;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .template-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .template-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .module-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .page-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .btn-generate, .btn-reset {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation -->
@@ -35,190 +521,271 @@
         </div>
     </nav>
 
-    <!-- Build Resume Section -->
-    <section id="build-resume" class="build-resume" style="padding-top: 120px;">
+    <section class="build-resume-page">
         <div class="container">
-            <h2 class="section-title">Build Your Resume</h2>
-            <p class="section-intro">Fill in your details below to generate a professional PDF resume</p>
+            <div class="page-header">
+                <h1><i class="fas fa-file-alt"></i> Resume Builder</h1>
+                <p>Create a professional resume in minutes. Choose a template and fill in your details.</p>
+            </div>
             
-            <form id="resume-form" class="resume-form">
-                <!-- Personal Details -->
-                <div class="form-section">
-                    <h3><i class="fas fa-user"></i> Personal Details</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="fullName">Full Name *</label>
-                            <input type="text" id="fullName" name="fullName" value="SAGAR CHAVAN" required>
+            <!-- Template Selection -->
+            <div class="template-section">
+                <h2><i class="fas fa-palette"></i> Choose Your Template</h2>
+                <div class="template-grid">
+                    <div class="template-card selected" data-template="professional" onclick="selectTemplate('professional')">
+                        <div class="template-preview professional">
+                            <span class="template-badge">Popular</span>
                         </div>
-                        <div class="form-group">
-                            <label for="title">Job Title *</label>
-                            <input type="text" id="title" name="title" value="Senior Technical Lead - DevOps" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="location">Location *</label>
-                            <input type="text" id="location" name="location" value="Pune, India" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="email">Email *</label>
-                            <input type="email" id="email" name="email" value="abc@gmail.com" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="linkedin">LinkedIn URL</label>
-                            <input type="text" id="linkedin" name="linkedin" value="linkedin.com/in/sagarchavan">
-                        </div>
-                        <div class="form-group">
-                            <label for="github">GitHub URL</label>
-                            <input type="text" id="github" name="github" value="github.com/saggy6210">
-                        </div>
-                        <div class="form-group">
-                            <label for="phone">Phone</label>
-                            <input type="text" id="phone" name="phone" value="+91-9988775544">
-                        </div>
-                        <div class="form-group">
-                            <label for="website">Portfolio URL</label>
-                            <input type="text" id="website" name="website" value="https://saggy6210.github.io/about-me/">
-                        </div>
+                        <h3>Professional</h3>
+                        <p>Classic navy blue design, perfect for corporate roles</p>
+                    </div>
+                    <div class="template-card" data-template="modern" onclick="selectTemplate('modern')">
+                        <div class="template-preview modern"></div>
+                        <h3>Modern</h3>
+                        <p>Contemporary look with bold colors</p>
+                    </div>
+                    <div class="template-card" data-template="minimal" onclick="selectTemplate('minimal')">
+                        <div class="template-preview minimal"></div>
+                        <h3>Minimal</h3>
+                        <p>Clean and simple, ATS-friendly design</p>
+                    </div>
+                    <div class="template-card" data-template="executive" onclick="selectTemplate('executive')">
+                        <div class="template-preview executive"></div>
+                        <h3>Executive</h3>
+                        <p>Sophisticated style for senior positions</p>
                     </div>
                 </div>
-
-                <!-- Highlights -->
-                <div class="form-section">
-                    <h3><i class="fas fa-star"></i> Profile Highlights</h3>
-                    <div class="form-group full-width">
-                        <label for="highlights">Key Highlights (one per line)</label>
-                        <textarea id="highlights" name="highlights" rows="4" placeholder="Enter your key highlights...">10+ Years DevOps & Cloud Engineering Experience | DevOps Leader | AI-Assisted Development using GitHub Copilot & Visual Studio Copilot | PTC India AI Hackathon Winner & Mentor | Cross-Functional Team Leadership & Mentoring | DevOps Transformation Initiatives</textarea>
+            </div>
+            
+            <form id="resume-form">
+                <div class="form-modules">
+                    <!-- Personal Details Module -->
+                    <div class="form-module" data-module="personal">
+                        <div class="module-header" onclick="toggleModule(this)">
+                            <h3><i class="fas fa-user"></i> Personal Details</h3>
+                            <div class="module-toggle"><i class="fas fa-chevron-down"></i></div>
+                        </div>
+                        <div class="module-content">
+                            <div class="module-grid">
+                                <div class="form-field">
+                                    <label>Full Name <span class="required">*</span></label>
+                                    <input type="text" name="fullName" value="SAGAR CHAVAN" required>
+                                </div>
+                                <div class="form-field">
+                                    <label>Job Title <span class="required">*</span></label>
+                                    <input type="text" name="title" value="Senior Technical Lead - DevOps" required>
+                                </div>
+                                <div class="form-field">
+                                    <label>Location <span class="required">*</span></label>
+                                    <input type="text" name="location" value="Pune, India" required>
+                                </div>
+                                <div class="form-field">
+                                    <label>Email <span class="required">*</span></label>
+                                    <input type="email" name="email" value="abc@gmail.com" required>
+                                </div>
+                                <div class="form-field">
+                                    <label>Phone</label>
+                                    <input type="text" name="phone" value="+91-9988775544">
+                                </div>
+                                <div class="form-field">
+                                    <label>LinkedIn URL</label>
+                                    <input type="text" name="linkedin" value="linkedin.com/in/sagarchavan">
+                                </div>
+                                <div class="form-field">
+                                    <label>GitHub URL</label>
+                                    <input type="text" name="github" value="github.com/saggy6210">
+                                </div>
+                                <div class="form-field">
+                                    <label>Portfolio URL</label>
+                                    <input type="text" name="website" value="https://saggy6210.github.io/about-me/">
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                    
+                    <!-- Profile Highlights Module -->
+                    <div class="form-module" data-module="highlights">
+                        <div class="module-header" onclick="toggleModule(this)">
+                            <h3><i class="fas fa-star"></i> Profile Highlights</h3>
+                            <div class="module-toggle"><i class="fas fa-chevron-down"></i></div>
+                        </div>
+                        <div class="module-content">
+                            <div class="form-field full-width">
+                                <label>Key Highlights <small>(Use | to separate)</small></label>
+                                <textarea name="highlights" rows="3">10+ Years DevOps & Cloud Engineering Experience | DevOps Leader | AI-Assisted Development using GitHub Copilot & Visual Studio Copilot | PTC India AI Hackathon Winner | Cross-Functional Team Leadership & Mentoring | DevOps Transformation Initiatives</textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Professional Summary Module -->
+                    <div class="form-module" data-module="summary">
+                        <div class="module-header" onclick="toggleModule(this)">
+                            <h3><i class="fas fa-file-alt"></i> Professional Summary</h3>
+                            <div class="module-toggle"><i class="fas fa-chevron-down"></i></div>
+                        </div>
+                        <div class="module-content">
+                            <div class="form-field full-width">
+                                <label>Summary <span class="required">*</span></label>
+                                <textarea name="summary" rows="10" required>Results-driven DevOps Leader with 10+ years of experience in designing, automating, and managing enterprise-scale cloud infrastructure and DevOps platforms across AWS and Azure environments. Expertise in Infrastructure as Code (Terraform, Ansible), container orchestration (Kubernetes, Helm), CI/CD automation (Jenkins, GitLab CI/CD, Bitbucket, GitHub Actions), observability and monitoring platforms (Datadog, Grafana, Prometheus, Elasticsearch, Alertmanager), cloud-native technologies (Docker, AWS, Azure), and SRE best practices.
 
-                <!-- Professional Summary -->
-                <div class="form-section">
-                    <h3><i class="fas fa-file-alt"></i> Professional Summary</h3>
-                    <div class="form-group full-width">
-                        <label for="summary">Summary *</label>
-                        <textarea id="summary" name="summary" rows="8" required>Results-driven DevOps Leader with 10+ years of experience in designing, automating, and managing enterprise-scale cloud infrastructure and DevOps platforms across AWS and Azure environments. Expertise in Infrastructure as Code (Terraform, Ansible), container orchestration (Kubernetes, Helm), CI/CD automation (Jenkins, GitLab CI/CD, Bitbucket, GitHub Actions), observability and monitoring platforms (Datadog, Grafana, Prometheus, Elasticsearch, Alertmanager), cloud-native technologies (Docker, AWS, Azure), and SRE best practices.
-
-Strong hands-on experience with Terraform, Ansible, Docker, Kubernetes, Jenkins, GitLab, Bitbucket, Helm, Prometheus, Grafana, Elasticsearch, Datadog, Linux, Windows, Shell scripting, Python, and GoLang. Proven ability to architect scalable, highly available, and secure infrastructure solutions while improving operational efficiency and deployment reliability.
+Strong hands-on experience with Terraform, Ansible, Docker, Kubernetes, Jenkins, GitLab, Bitbucket, Helm, Prometheus, Grafana, Elasticsearch, Datadog, Linux, Windows, Shell scripting, Python, and GoLang. Proven ability to architect scalable, highly available, and secure infrastructure solutions.
 
 Proven track record leading cross-functional teams of 5+ engineers, driving DevOps transformation initiatives, and delivering highly available systems with 99.9% uptime SLA.
 
-Passionate about innovation and AI-driven engineering solutions, with hands-on experience using GitHub Copilot and Visual Studio Copilot for development acceleration and automation. Recognized for mentoring and leading a team that won the PTC India-level AI Hackathon.
-
-Skilled in developing customer-focused internal web applications and dashboards for operational tracking, proactive issue identification, and log analytics using Datadog, Grafana, and Prometheus.</textarea>
-                    </div>
-                </div>
-
-                <!-- Core Competencies -->
-                <div class="form-section">
-                    <h3><i class="fas fa-cogs"></i> Core Competencies</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="comp_cloud">Cloud & Infrastructure</label>
-                            <input type="text" id="comp_cloud" name="comp_cloud" value="AWS (EKS, EC2, S3, VPC, IAM), Azure (AKS, VMs, Batch Account, Gallery Images, Storage Accounts)">
-                        </div>
-                        <div class="form-group">
-                            <label for="comp_iac">IaC & Automation</label>
-                            <input type="text" id="comp_iac" name="comp_iac" value="Terraform, Ansible, Python, Golang, PowerShell, Shell Scripting">
-                        </div>
-                        <div class="form-group">
-                            <label for="comp_cicd">CI/CD & DevOps</label>
-                            <input type="text" id="comp_cicd" name="comp_cicd" value="GitLab CI/CD, Jenkins, Bitbucket Pipelines, GitHub Actions">
-                        </div>
-                        <div class="form-group">
-                            <label for="comp_containers">Containers & Orchestration</label>
-                            <input type="text" id="comp_containers" name="comp_containers" value="Kubernetes, Docker, Helm, EKS, AKS, Container Security, Microservices">
-                        </div>
-                        <div class="form-group">
-                            <label for="comp_observability">Observability & SRE</label>
-                            <input type="text" id="comp_observability" name="comp_observability" value="Grafana, Prometheus, Alertmanager, Datadog, Elasticsearch, PagerDuty, SLO/SLI/SLA">
-                        </div>
-                        <div class="form-group">
-                            <label for="comp_leadership">Leadership & Practices</label>
-                            <input type="text" id="comp_leadership" name="comp_leadership" value="Team Leadership (5+ Engineers), Agile/Scrum, DR Planning, Cost Optimization, Security Hardening">
+Passionate about innovation and AI-driven engineering solutions. Recognized for mentoring and leading a team that won the PTC India-level AI Hackathon.</textarea>
+                            </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Professional Experience -->
-                <div class="form-section">
-                    <h3><i class="fas fa-briefcase"></i> Professional Experience</h3>
-                    <div id="experience-container">
-                        <div class="experience-entry">
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label>Job Title *</label>
-                                    <input type="text" name="exp_title[]" value="Senior Technical Lead - DevOps" required>
+                    
+                    <!-- Core Competencies Module -->
+                    <div class="form-module" data-module="competencies">
+                        <div class="module-header" onclick="toggleModule(this)">
+                            <h3><i class="fas fa-cogs"></i> Core Competencies</h3>
+                            <div class="module-toggle"><i class="fas fa-chevron-down"></i></div>
+                        </div>
+                        <div class="module-content">
+                            <div class="module-grid">
+                                <div class="form-field">
+                                    <label>Cloud & Infrastructure</label>
+                                    <input type="text" name="comp_cloud" value="AWS (EKS, EC2, S3, VPC, IAM), Azure (AKS, VMs, Batch Account, Gallery Images, Storage Accounts)">
                                 </div>
-                                <div class="form-group">
-                                    <label>Company *</label>
-                                    <input type="text" name="exp_company[]" value="PTC Software, Pune India" required>
+                                <div class="form-field">
+                                    <label>IaC & Automation</label>
+                                    <input type="text" name="comp_iac" value="Terraform, Ansible, Python, Golang, PowerShell, Shell Scripting">
                                 </div>
-                                <div class="form-group">
-                                    <label>Period *</label>
-                                    <input type="text" name="exp_period[]" value="May 2022 - Present" required>
+                                <div class="form-field">
+                                    <label>CI/CD & DevOps</label>
+                                    <input type="text" name="comp_cicd" value="GitLab CI/CD, Jenkins, Bitbucket Pipelines, GitHub Actions">
                                 </div>
-                                <div class="form-group full-width">
-                                    <label>Achievements (one per line)</label>
-                                    <textarea name="exp_achievements[]" rows="6">Developing and executing DevOps strategies that enhances collaboration between DevOps, Dev and QA teams
+                                <div class="form-field">
+                                    <label>Containers & Orchestration</label>
+                                    <input type="text" name="comp_containers" value="Kubernetes, Docker, Helm, EKS, AKS, Container Security, Microservices">
+                                </div>
+                                <div class="form-field">
+                                    <label>Observability & SRE</label>
+                                    <input type="text" name="comp_observability" value="Grafana, Prometheus, Alertmanager, Datadog, Elasticsearch, PagerDuty, SLO/SLI/SLA">
+                                </div>
+                                <div class="form-field">
+                                    <label>Leadership & Practices</label>
+                                    <input type="text" name="comp_leadership" value="Team Leadership (5+ Engineers), Agile/Scrum, DR Planning, Cost Optimization, Security Hardening">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Professional Experience Module -->
+                    <div class="form-module" data-module="experience">
+                        <div class="module-header" onclick="toggleModule(this)">
+                            <h3><i class="fas fa-briefcase"></i> Professional Experience</h3>
+                            <div class="module-toggle"><i class="fas fa-chevron-down"></i></div>
+                        </div>
+                        <div class="module-content">
+                            <div class="entry-list" id="experience-list">
+                                <div class="entry-item">
+                                    <div class="entry-header">
+                                        <span class="entry-number">Experience #1</span>
+                                    </div>
+                                    <div class="module-grid">
+                                        <div class="form-field">
+                                            <label>Job Title <span class="required">*</span></label>
+                                            <input type="text" name="exp_title[]" value="Senior Technical Lead - DevOps" required>
+                                        </div>
+                                        <div class="form-field">
+                                            <label>Company <span class="required">*</span></label>
+                                            <input type="text" name="exp_company[]" value="PTC Software, Pune India" required>
+                                        </div>
+                                        <div class="form-field full-width">
+                                            <label>Period <span class="required">*</span></label>
+                                            <input type="text" name="exp_period[]" value="May 2022 - Present" required>
+                                        </div>
+                                        <div class="form-field full-width">
+                                            <label>Key Achievements <small>(one per line)</small></label>
+                                            <textarea name="exp_achievements[]" rows="6">Developing and executing DevOps strategies that enhances collaboration between DevOps, Dev and QA teams
 Leading and mentoring a team of DevOps engineers, guiding best practices
 Implementing CI/CD using Gitlab, Python, Ansible playbooks, Terraform for IaC, Grafana, and Datadog dashboards
 Led automation of Azure gallery image creation process using Ansible, Python, Azure Identity
 Developed internal GoLang tools for operational automation and cloud resource cleanup
 Implemented enterprise monitoring and alerting using Datadog, Grafana, Prometheus, and Alertmanager</textarea>
+                                        </div>
+                                    </div>
                                 </div>
+                            </div>
+                            <button type="button" class="btn-add" onclick="addExperience()">
+                                <i class="fas fa-plus"></i> Add Another Experience
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Education Module -->
+                    <div class="form-module" data-module="education">
+                        <div class="module-header" onclick="toggleModule(this)">
+                            <h3><i class="fas fa-graduation-cap"></i> Education</h3>
+                            <div class="module-toggle"><i class="fas fa-chevron-down"></i></div>
+                        </div>
+                        <div class="module-content">
+                            <div class="entry-list" id="education-list">
+                                <div class="entry-item">
+                                    <div class="entry-header">
+                                        <span class="entry-number">Education #1</span>
+                                    </div>
+                                    <div class="module-grid">
+                                        <div class="form-field">
+                                            <label>Degree <span class="required">*</span></label>
+                                            <input type="text" name="edu_degree[]" value="MBA - International Business" required>
+                                        </div>
+                                        <div class="form-field">
+                                            <label>Institution <span class="required">*</span></label>
+                                            <input type="text" name="edu_institution[]" value="PUMBA, Savitribai Phule Pune University" required>
+                                        </div>
+                                        <div class="form-field full-width">
+                                            <label>Period <span class="required">*</span></label>
+                                            <input type="text" name="edu_period[]" value="2019 - 2021" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-add" onclick="addEducation()">
+                                <i class="fas fa-plus"></i> Add Another Education
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Awards Module -->
+                    <div class="form-module" data-module="awards">
+                        <div class="module-header" onclick="toggleModule(this)">
+                            <h3><i class="fas fa-trophy"></i> Awards & Recognition</h3>
+                            <div class="module-toggle"><i class="fas fa-chevron-down"></i></div>
+                        </div>
+                        <div class="module-content">
+                            <div class="form-field full-width">
+                                <label>Awards <small>(one per line)</small></label>
+                                <textarea name="awards" rows="3">Winner of PTC India Hackathon 2026 & Other Applause Awards</textarea>
                             </div>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-outline" onclick="addExperience()"><i class="fas fa-plus"></i> Add Experience</button>
                 </div>
-
-                <!-- Education -->
-                <div class="form-section">
-                    <h3><i class="fas fa-graduation-cap"></i> Education</h3>
-                    <div id="education-container">
-                        <div class="education-entry">
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label>Degree *</label>
-                                    <input type="text" name="edu_degree[]" value="MBA - International Business" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Institution *</label>
-                                    <input type="text" name="edu_institution[]" value="PUMBA, Savitribai Phule Pune University" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Period *</label>
-                                    <input type="text" name="edu_period[]" value="2019 - 2021" required>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" class="btn btn-outline" onclick="addEducation()"><i class="fas fa-plus"></i> Add Education</button>
-                </div>
-
-                <!-- Awards -->
-                <div class="form-section">
-                    <h3><i class="fas fa-trophy"></i> Awards & Recognition</h3>
-                    <div class="form-group full-width">
-                        <label for="awards">Awards (one per line)</label>
-                        <textarea id="awards" name="awards" rows="3">Winner of PTC India Hackathon 2026 & Other Applause Awards</textarea>
-                    </div>
-                </div>
-
-                <!-- Submit -->
+                
+                <!-- Form Actions -->
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary btn-large"><i class="fas fa-file-pdf"></i> Generate Resume PDF</button>
-                    <button type="button" class="btn btn-secondary" onclick="resetForm()"><i class="fas fa-undo"></i> Reset Form</button>
+                    <button type="submit" class="btn-generate">
+                        <i class="fas fa-file-pdf"></i> Generate Resume PDF
+                    </button>
+                    <button type="button" class="btn-reset" onclick="resetForm()">
+                        <i class="fas fa-undo"></i> Reset Form
+                    </button>
                 </div>
             </form>
-
-            <!-- Download Section (hidden initially) -->
-            <div id="download-section" class="download-section" style="display: none;">
-                <div class="success-message">
-                    <i class="fas fa-check-circle"></i>
-                    <h3>Resume Generated Successfully!</h3>
-                    <p>Your professional resume is ready for download.</p>
-                    <a id="download-link" href="#" class="btn btn-primary btn-large" download><i class="fas fa-download"></i> Download Resume PDF</a>
+            
+            <!-- Success Message -->
+            <div class="success-section" id="success-section">
+                <div class="success-icon">
+                    <i class="fas fa-check"></i>
                 </div>
+                <h3>Resume Generated Successfully!</h3>
+                <p id="success-message">Your professional resume has been downloaded.</p>
+                <button type="button" class="btn-generate" onclick="regenerateResume()">
+                    <i class="fas fa-download"></i> Download Again
+                </button>
             </div>
         </div>
     </section>
@@ -237,102 +804,161 @@ Implemented enterprise monitoring and alerting using Datadog, Grafana, Prometheu
 
     <script>
         const { jsPDF } = window.jspdf;
+        let selectedTemplate = 'professional';
+        let lastFormData = null;
         
         // Mobile menu toggle
         const hamburger = document.querySelector('.hamburger');
         const navMenu = document.querySelector('.nav-menu');
-
         hamburger.addEventListener('click', () => {
             hamburger.classList.toggle('active');
             navMenu.classList.toggle('active');
         });
-
-        // Close menu when clicking a link
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', () => {
-                hamburger.classList.remove('active');
-                navMenu.classList.remove('active');
+        
+        // Template Selection
+        function selectTemplate(template) {
+            selectedTemplate = template;
+            document.querySelectorAll('.template-card').forEach(card => {
+                card.classList.remove('selected');
             });
-        });
-
-        // Resume Builder Functions
+            document.querySelector(`[data-template="${template}"]`).classList.add('selected');
+        }
+        
+        // Module Toggle
+        function toggleModule(header) {
+            const module = header.parentElement;
+            module.classList.toggle('collapsed');
+        }
+        
+        // Add Experience
+        let expCount = 1;
         function addExperience() {
-            const container = document.getElementById('experience-container');
+            expCount++;
+            const list = document.getElementById('experience-list');
             const entry = document.createElement('div');
-            entry.className = 'experience-entry';
+            entry.className = 'entry-item';
             entry.innerHTML = `
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Job Title *</label>
+                <div class="entry-header">
+                    <span class="entry-number">Experience #${expCount}</span>
+                    <button type="button" class="btn-remove" onclick="removeEntry(this)">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+                <div class="module-grid">
+                    <div class="form-field">
+                        <label>Job Title <span class="required">*</span></label>
                         <input type="text" name="exp_title[]" required>
                     </div>
-                    <div class="form-group">
-                        <label>Company *</label>
+                    <div class="form-field">
+                        <label>Company <span class="required">*</span></label>
                         <input type="text" name="exp_company[]" required>
                     </div>
-                    <div class="form-group">
-                        <label>Period *</label>
+                    <div class="form-field full-width">
+                        <label>Period <span class="required">*</span></label>
                         <input type="text" name="exp_period[]" required>
                     </div>
-                    <div class="form-group full-width">
-                        <label>Achievements (one per line)</label>
+                    <div class="form-field full-width">
+                        <label>Key Achievements <small>(one per line)</small></label>
                         <textarea name="exp_achievements[]" rows="4"></textarea>
                     </div>
                 </div>
-                <button type="button" class="btn btn-danger btn-small" onclick="removeEntry(this)"><i class="fas fa-trash"></i> Remove</button>
             `;
-            container.appendChild(entry);
+            list.appendChild(entry);
         }
-
+        
+        // Add Education
+        let eduCount = 1;
         function addEducation() {
-            const container = document.getElementById('education-container');
+            eduCount++;
+            const list = document.getElementById('education-list');
             const entry = document.createElement('div');
-            entry.className = 'education-entry';
+            entry.className = 'entry-item';
             entry.innerHTML = `
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Degree *</label>
+                <div class="entry-header">
+                    <span class="entry-number">Education #${eduCount}</span>
+                    <button type="button" class="btn-remove" onclick="removeEntry(this)">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+                <div class="module-grid">
+                    <div class="form-field">
+                        <label>Degree <span class="required">*</span></label>
                         <input type="text" name="edu_degree[]" required>
                     </div>
-                    <div class="form-group">
-                        <label>Institution *</label>
+                    <div class="form-field">
+                        <label>Institution <span class="required">*</span></label>
                         <input type="text" name="edu_institution[]" required>
                     </div>
-                    <div class="form-group">
-                        <label>Period *</label>
+                    <div class="form-field full-width">
+                        <label>Period <span class="required">*</span></label>
                         <input type="text" name="edu_period[]" required>
                     </div>
                 </div>
-                <button type="button" class="btn btn-danger btn-small" onclick="removeEntry(this)"><i class="fas fa-trash"></i> Remove</button>
             `;
-            container.appendChild(entry);
+            list.appendChild(entry);
         }
-
-        function removeEntry(button) {
-            button.parentElement.remove();
+        
+        function removeEntry(btn) {
+            btn.closest('.entry-item').remove();
         }
-
+        
         function resetForm() {
             document.getElementById('resume-form').reset();
-            document.getElementById('download-section').style.display = 'none';
+            document.getElementById('success-section').classList.remove('show');
         }
-
-        // PDF Generation Function
-        function generatePDF(data) {
+        
+        function regenerateResume() {
+            if (lastFormData) {
+                const doc = generatePDF(lastFormData, selectedTemplate);
+                const fileName = lastFormData.fullName.replace(/\s+/g, '') + '_Resume.pdf';
+                doc.save(fileName);
+            }
+        }
+        
+        // Template Color Schemes
+        const templates = {
+            professional: {
+                primary: [25, 55, 95],
+                secondary: [70, 130, 180],
+                accent: [0, 128, 128],
+                headerBg: [245, 248, 252],
+                headerStripe: [25, 55, 95]
+            },
+            modern: {
+                primary: [44, 62, 80],
+                secondary: [52, 152, 219],
+                accent: [46, 204, 113],
+                headerBg: [236, 240, 241],
+                headerStripe: [44, 62, 80]
+            },
+            minimal: {
+                primary: [50, 50, 50],
+                secondary: [100, 100, 100],
+                accent: [70, 70, 70],
+                headerBg: [255, 255, 255],
+                headerStripe: [200, 200, 200]
+            },
+            executive: {
+                primary: [26, 26, 46],
+                secondary: [108, 92, 231],
+                accent: [253, 203, 110],
+                headerBg: [248, 249, 250],
+                headerStripe: [26, 26, 46]
+            }
+        };
+        
+        // PDF Generation
+        function generatePDF(data, templateName) {
             const doc = new jsPDF();
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
             const margin = 15;
             let yPos = 0;
             
-            // Colors
-            const primaryColor = [25, 55, 95];
-            const secondaryColor = [70, 130, 180];
-            const accentColor = [0, 128, 128];
+            const t = templates[templateName];
             const textDark = [30, 30, 30];
             const textMedium = [70, 70, 70];
             
-            // Helper function to check page break
             function checkPageBreak(needed) {
                 if (yPos + needed > pageHeight - 20) {
                     doc.addPage();
@@ -343,22 +969,22 @@ Implemented enterprise monitoring and alerting using Datadog, Grafana, Prometheu
             }
             
             // Header Background
-            doc.setFillColor(245, 248, 252);
+            doc.setFillColor(...t.headerBg);
             doc.rect(0, 0, pageWidth, 55, 'F');
-            doc.setFillColor(...primaryColor);
-            doc.rect(0, 0, pageWidth, 3, 'F');
+            doc.setFillColor(...t.headerStripe);
+            doc.rect(0, 0, pageWidth, templateName === 'minimal' ? 1 : 3, 'F');
             
             // Name
             yPos = 12;
             doc.setFont('helvetica', 'bold');
-            doc.setFontSize(24);
-            doc.setTextColor(...primaryColor);
+            doc.setFontSize(templateName === 'executive' ? 26 : 24);
+            doc.setTextColor(...t.primary);
             doc.text(data.fullName, pageWidth / 2, yPos, { align: 'center' });
             
             // Title
             yPos += 10;
             doc.setFontSize(12);
-            doc.setTextColor(...secondaryColor);
+            doc.setTextColor(...t.secondary);
             doc.text(data.title, pageWidth / 2, yPos, { align: 'center' });
             
             // Contact Info
@@ -372,43 +998,60 @@ Implemented enterprise monitoring and alerting using Datadog, Grafana, Prometheu
             if (data.website) contactInfo += `  |  ${data.website}`;
             doc.text(contactInfo, pageWidth / 2, yPos, { align: 'center', maxWidth: pageWidth - 20 });
             
-            // Separator Line
+            // Separator
             yPos += 5;
-            doc.setDrawColor(...primaryColor);
-            doc.setLineWidth(0.5);
+            doc.setDrawColor(...t.primary);
+            doc.setLineWidth(templateName === 'minimal' ? 0.3 : 0.5);
             doc.line(margin + 20, yPos, pageWidth - margin - 20, yPos);
             
-            // Highlights in modular box
+            // Highlights Box
             if (data.highlights) {
                 yPos += 4;
-                // Draw highlight box
-                doc.setFillColor(240, 248, 255);
-                doc.setDrawColor(...secondaryColor);
-                doc.setLineWidth(0.8);
-                const boxHeight = 14;
-                doc.rect(15, yPos, pageWidth - 30, boxHeight, 'FD');
-                
-                // Highlights text centered in box
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(7.5);
-                doc.setTextColor(...primaryColor);
-                const highlightLines = doc.splitTextToSize(data.highlights, pageWidth - 40);
-                doc.text(highlightLines, pageWidth / 2, yPos + 5, { align: 'center' });
-                yPos += boxHeight + 3;
+                if (templateName !== 'minimal') {
+                    doc.setFillColor(240, 248, 255);
+                    doc.setDrawColor(...t.secondary);
+                    doc.setLineWidth(0.8);
+                    const boxHeight = 14;
+                    doc.rect(15, yPos, pageWidth - 30, boxHeight, 'FD');
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(7.5);
+                    doc.setTextColor(...t.primary);
+                    const highlightLines = doc.splitTextToSize(data.highlights, pageWidth - 40);
+                    doc.text(highlightLines, pageWidth / 2, yPos + 5, { align: 'center' });
+                    yPos += boxHeight + 3;
+                } else {
+                    doc.setFont('helvetica', 'italic');
+                    doc.setFontSize(8);
+                    doc.setTextColor(...textMedium);
+                    const highlightLines = doc.splitTextToSize(data.highlights, pageWidth - 30);
+                    doc.text(highlightLines, pageWidth / 2, yPos + 4, { align: 'center' });
+                    yPos += highlightLines.length * 4 + 4;
+                }
             }
             
             // Section Title Function
             function addSectionTitle(title) {
                 checkPageBreak(15);
                 yPos += 6;
-                doc.setFillColor(245, 248, 252);
-                doc.rect(margin, yPos - 1, pageWidth - 2 * margin, 8, 'F');
-                doc.setFillColor(...primaryColor);
-                doc.rect(margin, yPos - 1, 3, 8, 'F');
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(11);
-                doc.setTextColor(...primaryColor);
-                doc.text(title.toUpperCase(), margin + 6, yPos + 5);
+                if (templateName === 'minimal') {
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(11);
+                    doc.setTextColor(...t.primary);
+                    doc.text(title.toUpperCase(), margin, yPos + 5);
+                    yPos += 3;
+                    doc.setDrawColor(...t.secondary);
+                    doc.setLineWidth(0.3);
+                    doc.line(margin, yPos + 5, pageWidth - margin, yPos + 5);
+                } else {
+                    doc.setFillColor(...t.headerBg);
+                    doc.rect(margin, yPos - 1, pageWidth - 2 * margin, 8, 'F');
+                    doc.setFillColor(...t.primary);
+                    doc.rect(margin, yPos - 1, 3, 8, 'F');
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(11);
+                    doc.setTextColor(...t.primary);
+                    doc.text(title.toUpperCase(), margin + 6, yPos + 5);
+                }
                 yPos += 12;
             }
             
@@ -440,7 +1083,7 @@ Implemented enterprise monitoring and alerting using Datadog, Grafana, Prometheu
                     checkPageBreak(8);
                     doc.setFont('helvetica', 'bold');
                     doc.setFontSize(9);
-                    doc.setTextColor(...primaryColor);
+                    doc.setTextColor(...t.primary);
                     doc.text(comp.label, margin, yPos);
                     doc.setFont('helvetica', 'normal');
                     doc.setTextColor(...textDark);
@@ -454,25 +1097,22 @@ Implemented enterprise monitoring and alerting using Datadog, Grafana, Prometheu
             addSectionTitle('Professional Experience');
             data.experience.forEach(exp => {
                 checkPageBreak(25);
-                // Job Title and Period
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(10);
                 doc.setTextColor(...textDark);
                 doc.text(exp.title, margin, yPos);
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(9);
-                doc.setTextColor(...secondaryColor);
+                doc.setTextColor(...t.secondary);
                 doc.text(exp.period, pageWidth - margin, yPos, { align: 'right' });
                 
-                // Company
                 yPos += 5;
                 doc.setFont('helvetica', 'italic');
                 doc.setFontSize(9);
-                doc.setTextColor(...accentColor);
+                doc.setTextColor(...t.accent);
                 doc.text(exp.company, margin, yPos);
                 yPos += 5;
                 
-                // Achievements
                 if (exp.achievements) {
                     const achievements = exp.achievements.split('\n').filter(a => a.trim());
                     doc.setFont('helvetica', 'normal');
@@ -480,7 +1120,7 @@ Implemented enterprise monitoring and alerting using Datadog, Grafana, Prometheu
                     doc.setTextColor(...textDark);
                     achievements.forEach(achievement => {
                         checkPageBreak(6);
-                        doc.setTextColor(...secondaryColor);
+                        doc.setTextColor(...t.secondary);
                         doc.text('•', margin + 3, yPos);
                         doc.setTextColor(...textDark);
                         const achievementLines = doc.splitTextToSize(achievement.trim(), pageWidth - 2 * margin - 10);
@@ -500,7 +1140,7 @@ Implemented enterprise monitoring and alerting using Datadog, Grafana, Prometheu
                 doc.setTextColor(...textDark);
                 doc.text(edu.degree, margin, yPos);
                 doc.setFont('helvetica', 'bold');
-                doc.setTextColor(...secondaryColor);
+                doc.setTextColor(...t.secondary);
                 doc.text(edu.period, pageWidth - margin, yPos, { align: 'right' });
                 yPos += 4;
                 doc.setFont('helvetica', 'italic');
@@ -522,9 +1162,9 @@ Implemented enterprise monitoring and alerting using Datadog, Grafana, Prometheu
             
             return doc;
         }
-
-        // Form submission
-        document.getElementById('resume-form').addEventListener('submit', async function(e) {
+        
+        // Form Submission
+        document.getElementById('resume-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const formData = new FormData(this);
@@ -551,13 +1191,13 @@ Implemented enterprise monitoring and alerting using Datadog, Grafana, Prometheu
                 education: [],
                 awards: formData.get('awards')
             };
-
-            // Collect experience entries
+            
+            // Collect experiences
             const expTitles = formData.getAll('exp_title[]');
             const expCompanies = formData.getAll('exp_company[]');
             const expPeriods = formData.getAll('exp_period[]');
             const expAchievements = formData.getAll('exp_achievements[]');
-
+            
             for (let i = 0; i < expTitles.length; i++) {
                 data.experience.push({
                     title: expTitles[i],
@@ -566,12 +1206,12 @@ Implemented enterprise monitoring and alerting using Datadog, Grafana, Prometheu
                     achievements: expAchievements[i]
                 });
             }
-
-            // Collect education entries
+            
+            // Collect education
             const eduDegrees = formData.getAll('edu_degree[]');
             const eduInstitutions = formData.getAll('edu_institution[]');
             const eduPeriods = formData.getAll('edu_period[]');
-
+            
             for (let i = 0; i < eduDegrees.length; i++) {
                 data.education.push({
                     degree: eduDegrees[i],
@@ -579,29 +1219,18 @@ Implemented enterprise monitoring and alerting using Datadog, Grafana, Prometheu
                     period: eduPeriods[i]
                 });
             }
-
-            // Generate PDF
+            
+            lastFormData = data;
+            
             try {
-                const doc = generatePDF(data);
+                const doc = generatePDF(data, selectedTemplate);
                 const fileName = data.fullName.replace(/\s+/g, '') + '_Resume.pdf';
-                
-                // Save the PDF
                 doc.save(fileName);
                 
-                // Show success message
-                document.getElementById('download-section').style.display = 'block';
-                document.getElementById('download-section').innerHTML = `
-                    <div class="success-message">
-                        <i class="fas fa-check-circle"></i>
-                        <h3>Resume Generated Successfully!</h3>
-                        <p>Your professional resume <strong>${fileName}</strong> has been downloaded.</p>
-                        <button type="button" class="btn btn-primary btn-large" onclick="document.getElementById('resume-form').dispatchEvent(new Event('submit'))">
-                            <i class="fas fa-download"></i> Download Again
-                        </button>
-                    </div>
-                `;
-                
-                document.getElementById('download-section').scrollIntoView({ behavior: 'smooth' });
+                document.getElementById('success-message').textContent = 
+                    `Your ${selectedTemplate} resume "${fileName}" has been downloaded.`;
+                document.getElementById('success-section').classList.add('show');
+                document.getElementById('success-section').scrollIntoView({ behavior: 'smooth' });
             } catch (error) {
                 console.error('Error generating PDF:', error);
                 alert('Error generating PDF. Please try again.');
